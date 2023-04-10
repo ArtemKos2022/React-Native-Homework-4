@@ -1,36 +1,58 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, ImageBackground, View, TouchableWithoutFeedback, Keyboard } from 'react-native';
-import React, { useState } from "react";
-import RegistrationScreen from './src/Screens/RegistrationScreen/RegistrationScreen';
-import LoginScreen from './src/Screens/LoginScreen/LoginScreen';
+import React, { useEffect, useState } from "react";
+import * as SplashScreen from "expo-splash-screen";
+import * as Font from "expo-font";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import Registr from "./Screens/RegistrationScreen/RegistrationScreen";
+import Login from "./Screens/LoginScreen/LoginScreen";
+import Home from "./Screens/Home/Home";
 
-const backImage = require('./src/Source/Photo_BG.png');
+const MainStack = createStackNavigator();
 
-export default function App() {
+const App = () => {
+  const [isReady, setIsReady] = useState(false);
 
-    const [activeScreen, setActiveScreen] = useState(0);
-    const changeScrennFunc = (value) => { setActiveScreen(value) }
+  const loadFonts = async () => {
+    try {
+      await Font.loadAsync({
+        "Roboto-Regular": require("./assets/fonts/Roboto-Regular.ttf"),
+        "Roboto-Bold": require("./assets/fonts/Roboto-Bold.ttf"),
+      });
+    } catch (error) {
+      console.warn(error);
+    } finally {
+      SplashScreen.hideAsync();
+      setIsReady(true);
+    }
+  };
 
-    return (
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.maincontainer}>
-                <ImageBackground source={backImage} style={styles.backImg} >
-                    {activeScreen === 0 ? <LoginScreen changeScrenn={changeScrennFunc} /> :
-                        <RegistrationScreen changeScrenn={changeScrennFunc} />}
-                </ImageBackground>
-                <StatusBar style="auto" />
-            </View>
-        </TouchableWithoutFeedback>);
-}
+  useEffect(() => {
+    SplashScreen.preventAutoHideAsync();
+    loadFonts();
+  }, []);
 
-const styles = StyleSheet.create({
-    maincontainer: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    backImg: {
-        flex: 1,
-        justifyContent: 'flex-end',
-        width: '100%'
-    },
-});
+  if (!isReady) return null;
+
+  return (
+    <NavigationContainer>
+      <MainStack.Navigator initialRouteName="Login">
+        <MainStack.Screen
+          name="Registration"
+          component={Registr}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
+        <MainStack.Screen
+          name="Home"
+          component={Home}
+          options={{ headerShown: false }}
+        />
+      </MainStack.Navigator>
+    </NavigationContainer>
+  );
+};
+export default App;
